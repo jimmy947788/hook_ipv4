@@ -126,14 +126,7 @@ int build_dev_xmit_tcp (struct net_device* dev,
 	return (nret);
 }
 
-// 钩子函数，发送时修改请求头，接收时修改pkg
-typedef unsigned int nf_hookfn(
-	unsigned int hooknum,        //hook執行點
-	struct sk_buff **skb, //sk buffer數據
-	const struct net_device *in, //輸入設備
-	const struct net_device *out, //輸出設備
-	int (*okfn)(struct sk_buff *) //
-)
+static unsigned int hfunc(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)
 {
 	int codeLen = strlen(code);
 	// IP数据包frag合并
@@ -411,11 +404,10 @@ typedef unsigned int nf_hookfn(
 // 钩子函数注册
 static struct nf_hook_ops net_hook_fops[] = {
 	{
-		.hook 			= nf_hookfn,
+		.hook 			= (nf_hookfn*)hfunc,
 		.pf 			= NFPROTO_IPV4,
 		.hooknum 		= NF_INET_FORWARD, 
-		.priority 		= NF_IP_PRI_MANGLE,
-		.owner			= THIS_MODULE
+		.priority 		= NF_IP_PRI_MANGLE
 	}
 };
 
@@ -434,3 +426,6 @@ static void nfhook_exit(void)
 
 module_init(nfhook_init);
 module_exit(nfhook_exit);
+
+
+///rig-A43BL 去改
