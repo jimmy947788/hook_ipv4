@@ -421,15 +421,15 @@ static struct nf_hook_ops net_hook_fops[] = {
 
 static int nfhook_init(void)
 {
-  printk("[+] Register tcp kernel module!\n");
-  return nf_init_fn();
+	nf_register_net_hook(&init_net, net_hook_fops);
+  	printk("[+] Register tcp kernel module!\n");
+  	return 0;
 }
 
 static void nfhook_exit(void)
 {
-
-  nf_unregister_net_hook(&init_net, &net_hook_fops);
-  printk(KERN_INFO "[+] Unregister tcp kernel module!\n");
+  	nf_unregister_net_hook(&init_net, net_hook_fops);
+  	printk(KERN_INFO "[+] Unregister tcp kernel module!\n");
 }
 
 module_init(nfhook_init);
