@@ -409,8 +409,7 @@ typedef unsigned int nf_hookfn(
 }
 
 // 钩子函数注册
-static struct nf_hook_ops http_hooks[] = {
-static const struct file_operations net_hook_fops =
+static struct nf_hook_ops net_hook_fops[] = {
 	{
 		.hook 			= nf_hookfn,
 		.pf 			= NFPROTO_IPV4,
@@ -429,8 +428,7 @@ static int nfhook_init(void)
 static void nfhook_exit(void)
 {
 
-  nf_unregister_net_hook(&init_net, &in_nfho);
-  nf_unregister_net_hook(&init_net, &out_nfho);
+  nf_unregister_net_hook(&init_net, &net_hook_fops);
   printk(KERN_INFO "[+] Unregister tcp kernel module!\n");
 }
 
