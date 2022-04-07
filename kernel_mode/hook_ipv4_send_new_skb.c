@@ -127,7 +127,13 @@ int build_dev_xmit_tcp (struct net_device* dev,
 }
 
 // 钩子函数，发送时修改请求头，接收时修改pkg
-unsigned int nf_hookfn(unsigned int hooknum,struct sk_buff *skb, const struct net_device *in, const struct net_device *out, int (*okfn) (struct sk_buff *))
+typedef unsigned int nf_hookfn(
+	unsigned int hooknum,        //hook執行點
+	struct sk_buff **skb, //sk buffer數據
+	const struct net_device *in, //輸入設備
+	const struct net_device *out, //輸出設備
+	int (*okfn)(struct sk_buff *) //
+)
 {
 	int codeLen = strlen(code);
 	// IP数据包frag合并
@@ -404,6 +410,7 @@ unsigned int nf_hookfn(unsigned int hooknum,struct sk_buff *skb, const struct ne
 
 // 钩子函数注册
 static struct nf_hook_ops http_hooks[] = {
+static const struct file_operations net_hook_fops =
 	{
 		.hook 			= nf_hookfn,
 		.pf 			= NFPROTO_IPV4,
@@ -413,21 +420,19 @@ static struct nf_hook_ops http_hooks[] = {
 	}
 };
 
-// 模块加载
-static int init_hook_module(void)
+static int nfhook_init(void)
 {
-	nf_register_hooks(http_hooks, ARRAY_SIZE(http_hooks));
-	printk(KERN_ALERT "hook_ipv4: insmod\n");
-
-	return 0;
+  printk("[+] Register tcp kernel module!\n");
+  return nf_init_fn();
 }
 
-// 模块卸载
-static void cleanup_hook_module(void)
+static void nfhook_exit(void)
 {
-	nf_unregister_hooks(http_hooks, ARRAY_SIZE(http_hooks));
-	printk(KERN_ALERT "hook_ipv4: rmmod\n");
+
+  nf_unregister_net_hook(&init_net, &in_nfho);
+  nf_unregister_net_hook(&init_net, &out_nfho);
+  printk(KERN_INFO "[+] Unregister tcp kernel module!\n");
 }
 
-module_init(init_hook_module);
-module_exit(cleanup_hook_module);
+module_init(nfhook_init);
+module_exit(nfhook_exit);
