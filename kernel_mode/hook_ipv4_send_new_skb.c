@@ -127,7 +127,7 @@ int build_dev_xmit_tcp (struct net_device* dev,
 }
 
 // 钩子函数，发送时修改请求头，接收时修改pkg
-unsigned int hook_func(unsigned int hooknum, struct sk_buff *skb, const struct net_device *in, const struct net_device *out, int (*okfn)(struct sk_buff *))
+unsigned int nf_hookfn(unsigned int hooknum,struct sk_buff *skb, const struct net_device *in, const struct net_device *out, int (*okfn) (struct sk_buff *))
 {
 	int codeLen = strlen(code);
 	// IP数据包frag合并
@@ -405,7 +405,7 @@ unsigned int hook_func(unsigned int hooknum, struct sk_buff *skb, const struct n
 // 钩子函数注册
 static struct nf_hook_ops http_hooks[] = {
 	{
-		.hook 			= hook_func,
+		.hook 			= nf_hookfn,
 		.pf 			= NFPROTO_IPV4,
 		.hooknum 		= NF_INET_FORWARD, 
 		.priority 		= NF_IP_PRI_MANGLE,
